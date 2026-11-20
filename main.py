@@ -10,6 +10,7 @@ from the pinned hash, so the two grader runs are byte-identical.
 import hashlib
 import os
 import shutil
+import struct
 
 EXPECTED_SHA256 = "e2583a64d5f2376d23839c7ffcf61f7099a84d7bf615d34e08dd056159b3dfe4"
 EXPECTED_BYTES = 220197
@@ -29,6 +30,10 @@ def main():
             f"entry.png sha256 {digest} != expected {EXPECTED_SHA256}")
     if data[:8] != b"\x89PNG\r\n\x1a\n":
         raise SystemExit("entry.png is not a PNG")
+    width, height = struct.unpack(">II", data[16:24])
+    if (width, height) != (1024, 1024):
+        raise SystemExit(
+            f"entry.png dimensions {width}x{height} != expected 1024x1024")
     if not data.endswith(b"IEND\xaeB`\x82"):
         raise SystemExit("entry.png is missing its IEND chunk")
     out = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
